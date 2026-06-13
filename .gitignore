@@ -1,0 +1,29 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Byte-compiled / caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Secrets / local config
+.env
+.streamlit/secrets.toml
+
+# Claude Code local state
+.claude/
+
+# Local vector-store persistence
+chroma/
+*.sqlite3
+qdrant_storage/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

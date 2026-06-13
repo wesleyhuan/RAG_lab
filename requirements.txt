@@ -1,0 +1,30 @@
+streamlit>=1.35
+numpy
+pandas
+requests
+beautifulsoup4
+pypdf
+
+# Embedding / Rerank（本地模型）
+sentence-transformers>=3.0
+
+# Vector stores
+faiss-cpu
+chromadb
+qdrant-client
+
+# Hybrid retrieval
+rank-bm25
+jieba
+
+# LLM
+openai
+
+# 評估
+ragas>=0.2
+datasets
+langchain-openai
+langchain-ollama
+# ragas 0.4.x 仍 import langchain_community.chat_models.vertexai，
+# 但該模組在 langchain-community 0.4（sunset 版）已移除，故鎖在 0.3.x。
+langchain-community>=0.3,<0.4
