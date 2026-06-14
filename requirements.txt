@@ -28,3 +28,5 @@ langchain-ollama
 # ragas 0.4.x 仍 import langchain_community.chat_models.vertexai，
 # 但該模組在 langchain-community 0.4（sunset 版）已移除，故鎖在 0.3.x。
 langchain-community>=0.3,<0.4
+
+python-dotenv
