@@ -1,7 +1,9 @@
 import streamlit as st
+from dotenv import load_dotenv
 
 from rag_lab.state import init_state
 
+load_dotenv()
 st.set_page_config(page_title="RAG Lab", page_icon="🧪", layout="wide")
 init_state()
 
