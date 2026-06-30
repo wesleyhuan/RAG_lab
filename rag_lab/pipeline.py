@@ -3,7 +3,6 @@ from rag_lab.config import RAGConfig
 from rag_lab.documents import Document, Chunk
 from rag_lab.embedding import EMBEDDERS
 from rag_lab.llm import LLMS
-from rag_lab.rerank import CrossEncoderReranker
 from rag_lab.retrieval import RETRIEVERS
 from rag_lab.vectorstore import VECTOR_STORES
 
@@ -27,11 +26,19 @@ class RAGPipeline:
         self.llm = LLMS.create(config.llm_backend, **config.llm_params)
         self.embedder = EMBEDDERS.create(config.embedder, **config.embedder_params)
         self.store = VECTOR_STORES.create(config.vector_store)
-        self.reranker = (CrossEncoderReranker(config.reranker_model)
-                         if config.use_reranker else None)
+        self.reranker = self._make_reranker(config)
         self.chunks: list[Chunk] = []
         self.retriever = None
         self.final_k = config.retriever_params.get("top_k", 5)
+
+    @staticmethod
+    def _make_reranker(config: RAGConfig):
+        if not config.use_reranker:
+            return None
+        # 延遲 import：CrossEncoderReranker 會載 sentence_transformers（重），
+        # 只有真的開 reranker 才付這個成本
+        from rag_lab.rerank import CrossEncoderReranker
+        return CrossEncoderReranker(config.reranker_model)
 
     def build_index(self, docs: list[Document], progress=None) -> int:
         def log(msg):

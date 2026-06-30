@@ -25,14 +25,32 @@ st.caption(f"目前有 {len(docs)} 份文件可用。組合各種策略建立一
 pipelines = st.session_state.pipelines
 name = st.text_input("配置名稱", value=f"config-{len(pipelines) + 1}")
 
+def _default(options, preferred):
+    """預設選輕量、零下載的策略；該選項不存在時退回第一個。
+    （registry.keys() 是字母排序，預設值會是 bge / chroma / contextual 這種重的組合，
+     第一次建索引就要下載 ~1GB 並對每個 chunk 呼叫 LLM，故在此明確指定輕量預設。）"""
+    return options.index(preferred) if preferred in options else 0
+
+
+chunker_keys = CHUNKERS.keys()
+embedder_keys = EMBEDDERS.keys()
+store_keys = VECTOR_STORES.keys()
+retriever_keys = RETRIEVERS.keys()
+llm_keys = LLMS.keys()
+
 c1, c2, c3 = st.columns(3)
-chunker = c1.selectbox("Chunking", CHUNKERS.keys())
-embedder = c2.selectbox("Embedding", EMBEDDERS.keys())
-vector_store = c3.selectbox("Vector Store", VECTOR_STORES.keys())
+chunker = c1.selectbox("Chunking", chunker_keys,
+                       index=_default(chunker_keys, "recursive"))
+embedder = c2.selectbox("Embedding", embedder_keys,
+                        index=_default(embedder_keys, "minilm"))
+vector_store = c3.selectbox("Vector Store", store_keys,
+                            index=_default(store_keys, "faiss"))
 
 c4, c5 = st.columns(2)
-retriever = c4.selectbox("Retrieval", RETRIEVERS.keys())
-llm_backend = c5.selectbox("LLM", LLMS.keys())
+retriever = c4.selectbox("Retrieval", retriever_keys,
+                         index=_default(retriever_keys, "dense"))
+llm_backend = c5.selectbox("LLM", llm_keys,
+                           index=_default(llm_keys, "ollama"))
 
 with st.expander("參數（可選，留預設即可）"):
     p1, p2, p3 = st.columns(3)
@@ -44,7 +62,7 @@ with st.expander("參數（可選，留預設即可）"):
         placeholder="ollama 例：qwen2.5:7b ／ openai 例：gpt-4o-mini",
     )
     use_reranker = st.checkbox(
-        "使用 reranker（cross-encoder 精排，第一次會下載模型）", value=True
+        "使用 reranker（cross-encoder 精排，第一次會下載 ~1GB 模型）", value=False
     )
 
 # ── 建立 ─────────────────────────────────────────────────────

@@ -1,6 +1,20 @@
+import logging
+
+import streamlit as st
 from sentence_transformers import SentenceTransformer
 
+from rag_lab.torch_runtime import limit_torch_threads
 from .base import BaseEmbedder, EMBEDDERS
+
+logger = logging.getLogger(__name__)
+
+
+@st.cache_resource(show_spinner=False)
+def _load_model(model_name: str) -> SentenceTransformer:
+    """以模型名稱為 key 快取已載入的權重。重建索引(換配置但同一個模型)時
+    直接重用,不必每次把 ~80MB~1GB 權重重新讀進記憶體。"""
+    limit_torch_threads()          # 載模型前先限制執行緒，避免 encode 吃滿 CPU
+    return SentenceTransformer(model_name)
 
 
 class _STEmbedder(BaseEmbedder):
@@ -8,13 +22,16 @@ class _STEmbedder(BaseEmbedder):
     MODEL_NAME = ""
     QUERY_PREFIX = ""
 
-    def __init__(self, model_name: str = "", **_):
-        self.model = SentenceTransformer(model_name or self.MODEL_NAME)
+    def __init__(self, model_name: str = "", batch_size: int = 16, **_):
+        self.model = _load_model(model_name or self.MODEL_NAME)
         self.dim = self.model.get_sentence_embedding_dimension()
+        self.batch_size = batch_size   # 分批編碼，壓低記憶體峰值（預設小於官方 32）
 
     def embed_documents(self, texts):
+        logger.debug("embedding %d 段文字，batch_size=%d", len(texts), self.batch_size)
         return self.model.encode(
-            texts, normalize_embeddings=True, show_progress_bar=False
+            texts, batch_size=self.batch_size,
+            normalize_embeddings=True, show_progress_bar=False,
         ).tolist()
 
     def embed_query(self, text):

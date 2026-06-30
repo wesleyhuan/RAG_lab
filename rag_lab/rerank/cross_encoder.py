@@ -1,4 +1,14 @@
+import streamlit as st
 from sentence_transformers import CrossEncoder
+
+from rag_lab.torch_runtime import limit_torch_threads
+
+
+@st.cache_resource(show_spinner=False)
+def _load_model(model: str) -> CrossEncoder:
+    """以模型名稱為 key 快取 cross-encoder 權重,重建時重用。"""
+    limit_torch_threads()          # 載模型前先限制執行緒，避免 predict 吃滿 CPU
+    return CrossEncoder(model)
 
 
 class CrossEncoderReranker:
@@ -8,7 +18,7 @@ class CrossEncoderReranker:
     所以策略是：retriever 先粗篩多一點候選，cross-encoder 只重排這一小批。"""
 
     def __init__(self, model: str = "BAAI/bge-reranker-base"):
-        self.model = CrossEncoder(model)
+        self.model = _load_model(model)
 
     def rerank(self, query, results, top_k: int = 5):
         if not results:
