@@ -12,6 +12,8 @@ class SemanticChunker(BaseChunker):
     距離超過門檻（取所有距離的某個百分位數）就視為主題轉換 -> 斷開。
     優點：chunk 內語意連貫。缺點：建索引時要多跑一次 embedding。"""
 
+    NEEDS = ("embedder",)
+
     def __init__(self, embedder=None, percentile: int = 80,
                  max_chunk_size: int = 1200, **_):
         if embedder is None:

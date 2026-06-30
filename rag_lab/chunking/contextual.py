@@ -19,6 +19,8 @@ class ContextualChunker(BaseChunker):
     為每個 chunk 生成一段脈絡說明並接在前面，讓孤立的片段也帶有全文資訊。
     優點：檢索準確度通常明顯提升。缺點：建索引慢、要花 LLM token。"""
 
+    NEEDS = ("llm",)
+
     def __init__(self, llm=None, chunk_size: int = 500, overlap: int = 50,
                  max_doc_chars: int = 8000, **_):
         if llm is None:

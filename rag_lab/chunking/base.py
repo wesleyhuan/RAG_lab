@@ -7,6 +7,8 @@ CHUNKERS = Registry("chunker")
 
 
 class BaseChunker(ABC):
+    NEEDS: tuple[str, ...] = ()   # 此 chunker 需要 pipeline 注入的依賴名稱（如 "embedder"/"llm"）
+
     @abstractmethod
     def chunk(self, doc: Document) -> list[Chunk]: ...
 

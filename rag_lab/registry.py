@@ -41,6 +41,11 @@ class Registry:
             raise KeyError(f"{self.name} 沒有 '{key}'，可用：{self.keys()}")
         return self._items[key]
 
+    def get(self, key: str) -> type:
+        """回傳 key 對應的類別（必要時觸發延遲 import）。供需要讀類別屬性
+        （例如 chunker 的 NEEDS）而不建立實例時使用。"""
+        return self._resolve(key)
+
     def create(self, key: str, **kwargs):
         return self._resolve(key)(**kwargs)
 
