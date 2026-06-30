@@ -20,12 +20,13 @@ def test_recursive_chunk_does_not_load_embedder():
     chunks = pipe.chunk([doc])
     assert len(chunks) > 0, "recursive 應切出至少一個 chunk"
     assert "embedder" not in pipe.__dict__, "recursive 切割不該觸發 embedder"
+    assert pipe.chunks == chunks, "chunk() 應同時更新 self.chunks（後續 embed() 會讀它）"
 
 
 def test_build_index_calls_steps_in_order():
     pipe = RAGPipeline(RAGConfig())
     calls = []
-    pipe.chunk = lambda docs: (calls.append("chunk"), [])[1]
+    pipe.chunk = lambda docs: calls.append("chunk") or []
     pipe.embed = lambda: calls.append("embed")
     pipe.index = lambda: calls.append("index")
     pipe.build_retriever = lambda: calls.append("retriever")

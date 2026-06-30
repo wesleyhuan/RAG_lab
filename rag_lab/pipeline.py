@@ -69,6 +69,8 @@ class RAGPipeline:
     def build_retriever(self):
         # 有 reranker 時讓 retriever 多撈 4 倍候選，再由 cross-encoder 精排回 final_k
         fetch_k = self.final_k * 4 if self.reranker else self.final_k
+        # llm/embedder 在此一併傳入：建構 LLM 物件很便宜（Ollama 要到 generate 才載模型），
+        # 真正吃資源的權重已在前面 embed 步驟載完。
         params = {**self.config.retriever_params, "top_k": fetch_k}
         self.retriever = RETRIEVERS.create(
             self.config.retriever, embedder=self.embedder, store=self.store,
