@@ -156,5 +156,12 @@ st.subheader("⑤ LLM 回答")
 if st.button("產生回答", disabled=not step["results"]):
     with st.expander("送進 LLM 的 context"):
         st.write("\n\n---\n\n".join(c.text for c, _ in step["results"]))
-    gen, _ = pipe.answer(step["query"], stream=True)
-    st.write_stream(gen)
+    t0 = time.perf_counter()
+    try:
+        gen, _ = pipe.answer(step["query"], stream=True)
+        st.write_stream(gen)
+    except Exception as e:
+        st.error(f"產生回答失敗：{e}")
+        st.exception(e)
+    else:
+        st.caption(f"完成（{time.perf_counter() - t0:.1f}s）")
